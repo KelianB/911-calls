@@ -22,7 +22,7 @@ GET <nom de votre index>/_count
 À vous de jouer ! Écrivez les requêtes ElasticSearch permettant de résoudre les problèmes posés.
 
 ```
-TODO : ajouter les requêtes ElasticSearch ici
+Voir queries.js (chaque question est traitée dans une fonction séparée).
 ```
 
 ## Kibana
