@@ -1,4 +1,3 @@
-//const elasticsearch = require('elasticsearch');
 const csv = require('csv-parser');
 const fs = require('fs');
 const { Client } = require('@elastic/elasticsearch');
@@ -18,22 +17,65 @@ async function run() {
   await client.indices.create({
     index: INDEX_NAME,
     body : {
-      // TODO configurer l'index https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+      mappings: {
+        properties: {
+          location : {"type" : "geo_point"},
+        }
+      }
     }
   });
+
+  const entries = [];
 
   fs.createReadStream('../911.csv')
     .pipe(csv())
     .on('data', data => {
-      const call = { 
+      const call = {
+        location: {
+          lat: parseFloat(data.lat),
+          lon: parseFloat(data.lng),
+        },
+        desc: data.desc,
+        zip: data.zip,
+        title: data.title,
+        timeStamp: data.timeStamp.split(" ")[0], // send only YYYY-MM-dd to avoid one-off issues in months
+        twp: data.twp,
+        addr: data.addr,
       };
-      // TODO créer l'objet call à partir de la ligne
+      entries.push(call);
     })
     .on('end', async () => {
-      // TODO insérer les données dans ES en utilisant l'API de bulk https://www.elastic.co/guide/en/elasticsearch/reference/7.x/docs-bulk.html
-    });
-  
+      // Run the insert query
+      client.bulk(createBulkInsertQuery(entries), (err, resp) => {
+        if (err) console.trace(err.message);
+        else console.log(`Inserted ${resp.body.items.length} entries`);
 
+        client.close();
+      });
+    });
+}
+
+// Fonction utilitaire permettant de formatter les données pour l'insertion "bulk" dans elastic
+function createBulkInsertQuery(entries) {
+  const body = entries.reduce((acc, entry) => {
+    acc.push({
+      index: {
+        _index: INDEX_NAME,
+        _type: '_doc',
+      },
+      "mappings": {
+        "properties": {
+          "location": {
+            "type": "geo_point"
+          }
+        }
+      }
+    });
+    acc.push(entry)
+    return acc
+  }, []);
+
+  return { body };
 }
 
 run().catch(console.log);
