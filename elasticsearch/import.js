@@ -45,7 +45,7 @@ async function run() {
         zip: data.zip,
         title: data.title,
         timeStamp: date, // send only YYYY-MM-dd to avoid one-off issues in months
-        bimestre: year + "-" + Math.floor(month / 2),
+        bimestre: year + "-" + (Math.floor((month - 1) / 2) + 1),
         twp: data.twp,
         addr: data.addr,
       };
