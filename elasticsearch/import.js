@@ -20,6 +20,7 @@ async function run() {
       mappings: {
         properties: {
           location : {"type" : "geo_point"},
+          title: {"type": "keyword"},
         }
       }
     }
@@ -30,6 +31,11 @@ async function run() {
   fs.createReadStream('../911.csv')
     .pipe(csv())
     .on('data', data => {
+      const date = data.timeStamp.split(" ")[0];
+      const dateSplit = date.split("-");
+      const year = parseInt(dateSplit[0]);
+      const month = parseInt(dateSplit[1]);
+
       const call = {
         location: {
           lat: parseFloat(data.lat),
@@ -38,7 +44,8 @@ async function run() {
         desc: data.desc,
         zip: data.zip,
         title: data.title,
-        timeStamp: data.timeStamp.split(" ")[0], // send only YYYY-MM-dd to avoid one-off issues in months
+        timeStamp: date, // send only YYYY-MM-dd to avoid one-off issues in months
+        bimestre: year + "-" + Math.floor(month / 2),
         twp: data.twp,
         addr: data.addr,
       };
@@ -63,13 +70,6 @@ function createBulkInsertQuery(entries) {
         _index: INDEX_NAME,
         _type: '_doc',
       },
-      "mappings": {
-        "properties": {
-          "location": {
-            "type": "geo_point"
-          }
-        }
-      }
     });
     acc.push(entry)
     return acc

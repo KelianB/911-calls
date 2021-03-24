@@ -15,9 +15,9 @@ function Q1(then) {
       "categories" : {
         "filters": {
           "filters": {
-            "EMS": {"match": {"title" : "EMS: *"}},
-            "Fire": {"match": {"title" : "Fire: *"}},
-            "Traffic": {"match": {"title" : "Traffic: *"}}
+            "EMS": {"prefix": {"title" : "EMS:"}},
+            "Fire": {"prefix": {"title" : "Fire:"}},
+            "Traffic": {"prefix": {"title" : "Traffic:"}}
           },
         },
       }
