@@ -19,10 +19,18 @@ const insertCalls = async function (db, callback) {
   fs.createReadStream('../911.csv')
     .pipe(csv())
     .on('data', data => {
-
       const call = {
-      }; // TODO créer l'objet call à partir de la ligne
-
+              "loc" : { type: "Point", coordinates: [ parseFloat(data.lng), parseFloat(data.lat) ]},
+              "lat":data.lat,
+              "lng":data.lng,
+              "desc":data.desc,
+              "zip":data.zip,
+              "title":data.title,
+              "timeStamp":data.timeStamp,
+              "twp":data.twp,
+              "addr":data.addr,
+              "e":data.e
+            }; 
       calls.push(call);
     })
     .on('end', () => {
@@ -30,6 +38,8 @@ const insertCalls = async function (db, callback) {
         callback(result)
       });
     });
+  collection.createIndex( { loc : "2dsphere" } )
+  collection.createIndex( { title: "text"    } )
 }
 
 MongoClient.connect(MONGO_URL, {
